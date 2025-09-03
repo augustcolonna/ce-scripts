@@ -3,13 +3,14 @@
 
 ### Repo structure
 
---backfill scripts
-    --deployments
-        --deploymentsBackfill.js
-        --README.md
-    --incidents
-        --backfill.js
-        --README.md
-    --package-lock.json
-    --package.json
-    --README.md
+--ce-scripts    
+    --backfill scripts
+        --deployments
+            --deploymentsBackfill.js
+    --confluence
+        --....js
+--.env
+--.gitignore
+--package-lock.json
+--package.json
+--README.md
