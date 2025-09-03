@@ -8,13 +8,13 @@
  *
  * Usage:
  *   node splitLargeDeploymentBackfill.js \
- *     --input ./Paddle.csv \
+ *     --input ./your-csv.csv \
  *     --out ./split_envs \
  *     --column environment \
  *     [--delimiter ,] [--safe-names] [--overwrite] [--dry-run]
  *
  * Environment variables (optional; CLI flags override when provided):
- *   INPUT_FILE      Path to input CSV (default: ./Paddle.csv)
+ *   INPUT_FILE      Path to input CSV (default: ./<your-csv>.csv)
  *   OUTPUT_DIR      Directory to write split CSVs (default: ./split_envs)
  *   SPLIT_COLUMN    Column name to split on (default: environment)
  *   CSV_DELIMITER   CSV delimiter (default: ,)
@@ -72,7 +72,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ARGS = parseArgs(process.argv);
-const INPUT_FILE = ARGS.input || process.env.INPUT_FILE || path.resolve(process.cwd(), 'Paddle.csv');
+const INPUT_FILE = ARGS.input || process.env.INPUT_FILE || path.resolve(process.cwd(), '<your csv>.csv');
 const OUTPUT_DIR = ARGS.out || process.env.OUTPUT_DIR || path.resolve(process.cwd(), 'split_envs');
 const SPLIT_COLUMN = ARGS.column || process.env.SPLIT_COLUMN || 'environment';
 const CSV_DELIMITER = (ARGS.delimiter || process.env.CSV_DELIMITER || ',');
