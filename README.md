@@ -1,7 +1,3 @@
-### CE scripts
-- customer agnostic scripts and specific usecase scripts
-
-### Repo structure
 ## CE scripts
 - customer-agnostic scripts and specific use-case scripts
 
