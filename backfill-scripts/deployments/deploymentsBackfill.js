@@ -1,3 +1,24 @@
+#!/usr/bin/env node
+/**
+ * DX Deployments CSV uploader (JavaScript)
+ *
+ * Reads a CSV file and POSTs a deployment payload per row to your DX instance.
+ *
+ * Usage:
+ *   node /your-path-here/deploymentsBackfill.js --csv /your-path-here/deployments.csv \
+ *     --base-url https://yourinstance.getdx.net \
+ *     --token xxxxxxxx --dry-run
+ *
+ * Environment fallbacks (if flags omitted):
+ *   DX_BASE_URL, DX_TOKEN
+ *
+ * CSV column mapping (headers are case-insensitive):
+ *   required: deployed_at, service
+ *   one of: commit_sha OR merge_commit_shas
+ *   optional: token, base_url, reference_id, repository, source_url, source_name,
+ *             metadata, integration_branch, success, environment
+ */
+
 import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import fetch from 'node-fetch';
@@ -12,8 +33,8 @@ function log(msg) {
 function parseBool(val) {
   if (val == null) return undefined;
   const s = String(val).trim().toLowerCase();
-  if (["true", "1", "yes", "y"].includes(s)) return true;
-  if (["false", "0", "no", "n"].includes(s)) return false;
+  if (["true", "1", "yes", "y", "t"].includes(s)) return true;
+  if (["false", "0", "no", "n", "f"].includes(s)) return false;
   return undefined;
 }
 
@@ -34,6 +55,25 @@ function normalize(row) {
     out[(k || '').trim().toLowerCase()] = v;
   }
   return out;
+}
+
+// --------------------------- Timestamp helpers -------------------------------
+function toIso8601(v) {
+  const x = String(v ?? '').trim();
+  if (!x) return x;
+  // Already ISO with 'T'
+  if (x.length >= 19 && x[10] === 'T') return x;
+  // Common "YYYY-MM-DD HH:MM:SS" -> replace one space with 'T'
+  if (x.length >= 19 && x[10] === ' ') return x.slice(0,10) + 'T' + x.slice(11);
+  // "YYYY-MM-DDTHH:MM" -> pad seconds
+  if (x.length === 16 && x[10] === 'T') return x + ':00';
+  // "YYYY-MM-DD HH:MM" -> replace and pad seconds
+  if (x.length === 16 && x[10] === ' ') return x.slice(0,10) + 'T' + x.slice(11) + ':00';
+  return x;
+}
+function isIsoBasic(v) {
+  const s = String(v || '');
+  return s.length >= 19 && s[4] === '-' && s[7] === '-' && s[10] === 'T' && s[13] === ':' && s[16] === ':';
 }
 
 // --------------------------- HTTP -------------------------------
@@ -64,7 +104,10 @@ function buildPayload(row) {
   if (!r.deployed_at) throw new Error('Missing deployed_at');
   if (!r.service) throw new Error('Missing service');
 
-  payload.deployed_at = r.deployed_at.trim();
+  payload.deployed_at = toIso8601(r.deployed_at);
+  if (!isIsoBasic(payload.deployed_at)) {
+    throw new Error(`Invalid deployed_at value: ${r.deployed_at}. Expected ISO-8601 like 2025-01-01T12:05:00`);
+  }
   payload.service = r.service.trim();
 
   if (r.commit_sha) payload.commit_sha = r.commit_sha.trim();
