@@ -26,7 +26,7 @@
  *   priority, name (optional)
  *   started_at, resolved_at (optional; formats accepted: 'YYYY-MM-DD', 'YYYY-MM-DD HH:MM:SS', 'YYYY-MM-DDTHH:MM:SS', '...Z', or with offset)
  *   source_url (optional)
- *   services (optional; JSON array string or delimited list by comma/semicolon/pipe)
+ *   services_affected (optional; JSON array string or delimited list by comma/semicolon/pipe)
  */
 
 import fs from 'fs';
@@ -131,7 +131,7 @@ function buildPayload(row) {
     started_at: toIso8601Z(r.started_at),
     resolved_at: toIso8601Z(r.resolved_at),
     source_url: r.source_url || '',
-    services: parseServices(r.services),
+    services: parseServices(r.services_affected),
   };
 }
 
