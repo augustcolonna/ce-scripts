@@ -1,7 +1,6 @@
 ## CE scripts
 customer-agnostic scripts and specific use-case scripts
 
-
 ### Getting Started
 
 1) Install Node.js
@@ -25,10 +24,13 @@ npm install
 - Set `DX_BASE_URL` and `DX_TOKEN` in the file.
 
 4) Prepare your CSV(s)
-- A CSV is a spreadsheet saved as “Comma-Separated Values”.
+- A CSV is a spreadsheet saved as "Comma-Separated Values".
 - Make sure it has the columns required by the script you want to run (examples below).
-- Put the CSV file somewhere easy to reference. Recommended: create a `csv/` folder inside `ce-scripts/` and place files there.
-- Optional: set `DX_CSV_DIR` in your `.env` to the folder where you keep CSVs (defaults to `./csv`). When set, you can pass just the filename to the CLI, e.g., `--csv deployments.csv`.
+- Create a `csv/` folder inside `ce-scripts/` and place files there with these names:
+  - `deployments.csv` for deployments backfill
+  - `prs.csv` for set-pull-services
+  - `incidents.csv` for incidents import
+- Optional: set `DX_CSV_DIR` in your `.env` to a different folder, or pass `--csv /path/to/file.csv` to override.
 
 5) Do a dry run first
 - All commands support a “dry-run” mode that shows what would be sent without making changes.
@@ -96,22 +98,29 @@ FAILURE_LOG_FILE=./pipeline_import_failures.csv
 After installing dependencies, you can run scripts via the unified CLI. Examples:
 
 ```bash
-# Deployments
+# Deployments (uses csv/deployments.csv by default)
 npx dx --help
-npx dx deployments --csv ./deployments.csv --base-url https://your.getdx.net --token $DX_TOKEN --dry-run
+npx dx deployments --dry-run
+npx dx deployments
 
-# Set Pull Services
-npx dx set-pull-services --csv ./prs.csv --concurrency 6 --dry-run
+# Set Pull Services (uses csv/prs.csv by default)
+npx dx set-pull-services --concurrency 6 --dry-run
+npx dx set-pull-services
 
-# Split Deployments CSV by environment
-npx dx split-deployments --csv ./deployments.csv --out ./split_envs --column environment --dry-run
+# Split Deployments CSV by environment (uses csv/deployments.csv by default)
+npx dx split-deployments --out ./split_envs --column environment --dry-run
+npx dx split-deployments
 
-# Incidents import
-npx dx incidents --csv "./1 - Critical.csv" --api-url https://your.getdx.net/api/incidents.sync --token $DX_TOKEN --rps 10
+# Incidents import (uses csv/incidents.csv by default)
+npx dx incidents --dry-run
+npx dx incidents
 
 # Pipelines import from a directory of CSV chunks
-npx dx pipelines --dir ./Backfill --api-url https://your.getdx.net/api/pipelineRuns.sync --token $DX_TOKEN --rps 7
+npx dx pipelines --dir ./Backfill --dry-run
+npx dx pipelines --dir ./Backfill
 ```
+
+**Note**: If you don't pass `--csv`, the CLI automatically looks for the default CSV file in the `csv/` directory. You can still override with `--csv /path/to/other.csv` if needed.
 
 You can also create a shell alias for convenience, e.g. add to `~/.zshrc`:
 

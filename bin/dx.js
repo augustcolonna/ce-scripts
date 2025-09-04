@@ -34,6 +34,17 @@ function resolveCsvLike(p) {
   return path.resolve(defaultCsvDir, p);
 }
 
+// Auto-resolve CSV if not provided
+function getDefaultCsv(commandName) {
+  const csvMap = {
+    'deployments': 'deployments.csv',
+    'set-pull-services': 'prs.csv',
+    'split-deployments': 'deployments.csv',
+    'incidents': 'incidents.csv'
+  };
+  return csvMap[commandName] || null;
+}
+
 program
   .name('dx')
   .description('DX CE scripts unified CLI')
@@ -43,13 +54,18 @@ program
 program
   .command('deployments')
   .description('Upload deployments from a CSV')
-  .requiredOption('--csv <path>', 'CSV file path')
+  .option('--csv <path>', 'CSV file path (defaults to csv/deployments.csv)')
   .option('--base-url <url>', 'DX base URL')
   .option('--token <token>', 'DX API token')
   .option('--timeout <ms>', 'HTTP timeout in ms')
   .option('--dry-run', 'Do not POST, just log payloads')
   .action((opts) => {
-    const args = ['--csv', resolveCsvLike(opts.csv)];
+    const csvPath = opts.csv || getDefaultCsv('deployments');
+    if (!csvPath) {
+      console.error('Error: No CSV file specified and no default found. Use --csv to specify a file.');
+      process.exit(1);
+    }
+    const args = ['--csv', resolveCsvLike(csvPath)];
     if (opts.baseUrl) args.push('--base-url', opts.baseUrl);
     if (opts.token) args.push('--token', opts.token);
     if (opts.timeout) args.push('--timeout', String(opts.timeout));
@@ -61,14 +77,19 @@ program
 program
   .command('set-pull-services')
   .description('Call deployments.setPullServices from a CSV with repository/pull/services')
-  .requiredOption('--csv <path>', 'CSV file path (maps to --file)')
+  .option('--csv <path>', 'CSV file path (defaults to csv/prs.csv)')
   .option('--base-url <url>', 'DX base URL')
   .option('--token <token>', 'DX API token')
   .option('--concurrency <n>', 'Parallel workers', '6')
   .option('--timeout <ms>', 'Per-request timeout in ms (maps to --timeoutMs)')
   .option('--dry-run', 'Preview without sending requests')
   .action((opts) => {
-    const args = ['--file', resolveCsvLike(opts.csv), '--concurrency', String(opts.concurrency ?? '6')];
+    const csvPath = opts.csv || getDefaultCsv('set-pull-services');
+    if (!csvPath) {
+      console.error('Error: No CSV file specified and no default found. Use --csv to specify a file.');
+      process.exit(1);
+    }
+    const args = ['--file', resolveCsvLike(csvPath), '--concurrency', String(opts.concurrency ?? '6')];
     if (opts.baseUrl) args.push('--baseUrl', opts.baseUrl);
     if (opts.token) args.push('--token', opts.token);
     if (opts.timeout) args.push('--timeoutMs', String(opts.timeout));
@@ -81,7 +102,7 @@ program
 program
   .command('split-deployments')
   .description('Split a large deployments CSV by a column (default environment)')
-  .requiredOption('--csv <path>', 'Input CSV file path (maps to --input)')
+  .option('--csv <path>', 'Input CSV file path (defaults to csv/deployments.csv)')
   .option('--out <dir>', 'Output directory for split CSVs')
   .option('--column <name>', 'Column to split on')
   .option('--delimiter <char>', 'CSV delimiter, default ","')
@@ -89,7 +110,12 @@ program
   .option('--overwrite', 'Overwrite existing output files')
   .option('--dry-run', 'Preview output without writing files')
   .action((opts) => {
-    const args = ['--input', resolveCsvLike(opts.csv)];
+    const csvPath = opts.csv || getDefaultCsv('split-deployments');
+    if (!csvPath) {
+      console.error('Error: No CSV file specified and no default found. Use --csv to specify a file.');
+      process.exit(1);
+    }
+    const args = ['--input', resolveCsvLike(csvPath)];
     if (opts.out) args.push('--out', opts.out);
     if (opts.column) args.push('--column', opts.column);
     if (opts.delimiter) args.push('--delimiter', opts.delimiter);
@@ -103,13 +129,18 @@ program
 program
   .command('incidents')
   .description('Sync incidents from a CSV to DX')
-  .requiredOption('--csv <path>', 'CSV file path (maps to --input)')
+  .option('--csv <path>', 'CSV file path (defaults to csv/incidents.csv)')
   .option('--api-url <url>', 'DX incidents endpoint')
   .option('--token <token>', 'DX API token')
   .option('--rps <n>', 'Requests per second throttle')
   .option('--dry-run', 'Preview without sending')
   .action((opts) => {
-    const args = ['--input', resolveCsvLike(opts.csv)];
+    const csvPath = opts.csv || getDefaultCsv('incidents');
+    if (!csvPath) {
+      console.error('Error: No CSV file specified and no default found. Use --csv to specify a file.');
+      process.exit(1);
+    }
+    const args = ['--input', resolveCsvLike(csvPath)];
     if (opts.apiUrl) args.push('--api-url', opts.apiUrl);
     if (opts.token) args.push('--token', opts.token);
     if (opts.rps) args.push('--rps', String(opts.rps));
