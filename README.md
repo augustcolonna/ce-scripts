@@ -83,14 +83,16 @@ Notes:
 - `setPullServicesBackfill.js` now respects `DX_BASE_URL` and `DX_TOKEN`, plus `--baseUrl`/`--token` flags.
 
 ## When Updating
-- cd ce-scripts
-- git pull
-- git checkout -b feature/<your branch name>
-- make changes
-- git add .
-- git commit -m"your comments here"
-- git push OR if its your first time commiting git push --set-upstream origin master
+```
+cd ce-scripts
+git pull
+git checkout -b feature/name-of-branch-goes-here
+-- make changes --
+git add .
+git commit -m"your comments here"
+git push OR if its your first time commiting git push --set-upstream origin master
 PR gets reviewed and merged
+```
 
 ## Repo structure
 ```
