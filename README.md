@@ -4,7 +4,7 @@
 ## usage
 - usage instructions can be found in each script as well as their required variables.
 
-- npm i -> install dependencies upfront.
+- npm i --> install dependencies upfront.
 
 ## When Updating
 - cd ce-scripts
