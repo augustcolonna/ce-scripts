@@ -14,12 +14,13 @@
  *   --timeoutMs     Per request timeout. Default 30000
  */
 
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
-const csv = require("csv-parser");
-const minimist = require("minimist");
-require('dotenv').config();
+import fs from "fs";
+import path from "path";
+import axios from "axios";
+import csv from "csv-parser";
+import minimist from "minimist";
+import dotenv from 'dotenv';
+dotenv.config();
 
 /** ========= CONFIG ========= */
 const DX_BASE_URL = process.env.DX_BASE_URL || "";
@@ -225,9 +226,7 @@ async function main() {
   console.log("See benchling_success.csv and benchling_errors.csv");
 }
 
-if (require.main === module) {
-  main().catch((e) => {
-    console.error(e);
-    process.exit(1);
-  });
-}
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

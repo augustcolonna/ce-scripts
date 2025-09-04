@@ -1,13 +1,40 @@
 ## CE scripts
-- customer-agnostic scripts and specific use-case scripts
+customer-agnostic scripts and specific use-case scripts
 
-## Pre Reqs
+
+### Getting Started
+
+1) Install Node.js
+- Visit `https://nodejs.org` and install the LTS version.
+- Verify in a terminal:
+```bash
+node -v
+npm -v
 ```
-usage instructions can be found in each script as well as their required variables.
 
+2) Clone and open this repo
+```bash
+git clone <your repo url>
+cd ce-scripts
 npm install
-
 ```
+
+3) Create a .env file
+- In the `ce-scripts` folder, create a new file named `.env` and paste the template below.
+- Ask your DX admin for your DX base URL and an API token.
+- Set `DX_BASE_URL` and `DX_TOKEN` in the file.
+
+4) Prepare your CSV(s)
+- A CSV is a spreadsheet saved as “Comma-Separated Values”.
+- Make sure it has the columns required by the script you want to run (examples below).
+- Put the CSV file somewhere easy to reference. Recommended: create a `csv/` folder inside `ce-scripts/` and place files there.
+- Optional: set `DX_CSV_DIR` in your `.env` to the folder where you keep CSVs (defaults to `./csv`). When set, you can pass just the filename to the CLI, e.g., `--csv deployments.csv`.
+
+5) Do a dry run first
+- All commands support a “dry-run” mode that shows what would be sent without making changes.
+
+6) Run for real
+- Remove the dry-run flag when you’re ready. Start with a small CSV to test.
 
 ### Environment variables
 
@@ -42,6 +69,27 @@ API_URL=https://yourinstance.getdx.net/api/pipelineRuns.sync
 RPS=7
 FAILURE_LOG_FILE=./pipeline_import_failures.csv
 ```
+
+### What each script expects in your CSV
+
+- Deployments (`dx deployments`)
+  - Required columns: `deployed_at`, `service`
+  - One of: `commit_sha` OR `merge_commit_shas`
+  - Optional: `reference_id`, `repository`, `source_url`, `source_name`, `metadata`, `integration_branch`, `success`, `environment`
+  - Tip: You can include `base_url` and `token` per row to override.
+
+- Set Pull Services (`dx set-pull-services`)
+  - Required columns: `repository`, `pull_number`, and `services` (JSON array or delimited like `svc1|svc2`)
+
+- Split Deployments (`dx split-deployments`)
+  - Any CSV with a column to split on (default `environment`).
+
+- Incidents (`dx incidents`)
+  - Required: `reference_id`
+  - Optional: `source_name`, `priority`, `name`, `started_at`, `resolved_at`, `source_url`, `services`
+
+- Pipelines (`dx pipelines`)
+  - Directory of CSV files with common fields like `reference_id`, `pipeline_name`, `pipeline_source`, timestamps, etc.
 
 ### Unified CLI
 
@@ -81,6 +129,17 @@ Notes:
 - Flags always override env values.
 - `deploymentsBackfill.js` can also read `base_url`/`token` per-row from the CSV.
 - `setPullServicesBackfill.js` now respects `DX_BASE_URL` and `DX_TOKEN`, plus `--baseUrl`/`--token` flags.
+
+### Dry run vs. Live run
+- Dry run: adds `--dry-run` (or `--dryRun true` for set-pull-services). No data is sent, useful to validate CSV format and payloads.
+- Live run: remove the dry-run flag. Ensure `DX_TOKEN` is set and has the right permissions.
+
+### Troubleshooting
+- “CSV not found”: Double-check the path after `--csv` or `--dir`. Use absolute paths if unsure.
+- “Missing DX token”: Set `DX_TOKEN` in `.env` or pass `--token`. For dry run, you can omit it.
+- “Invalid timestamp”: Ensure timestamps are ISO-like, e.g. `2025-01-01T12:05:00` (deployments) or include `Z`/offset for incidents.
+- “Services format”: For arrays, use JSON like `["svc1","svc2"]` or delimited `svc1|svc2`.
+- Still stuck? Run with `--dry-run` and share the console output and the first 1-2 CSV rows (without secrets).
 
 ## When Updating
 ```

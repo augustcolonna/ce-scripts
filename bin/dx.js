@@ -25,6 +25,15 @@ function runNodeScript(scriptRelativePath, args) {
   child.on('exit', (code) => process.exit(code ?? 0));
 }
 
+// Default CSV directory resolution
+const defaultCsvDir = process.env.DX_CSV_DIR || path.resolve(repoRoot, 'csv');
+function resolveCsvLike(p) {
+  if (!p) return p;
+  if (path.isAbsolute(p)) return p;
+  if (p.includes('/') || p.includes('\\')) return path.resolve(process.cwd(), p);
+  return path.resolve(defaultCsvDir, p);
+}
+
 program
   .name('dx')
   .description('DX CE scripts unified CLI')
@@ -40,7 +49,7 @@ program
   .option('--timeout <ms>', 'HTTP timeout in ms')
   .option('--dry-run', 'Do not POST, just log payloads')
   .action((opts) => {
-    const args = ['--csv', opts.csv];
+    const args = ['--csv', resolveCsvLike(opts.csv)];
     if (opts.baseUrl) args.push('--base-url', opts.baseUrl);
     if (opts.token) args.push('--token', opts.token);
     if (opts.timeout) args.push('--timeout', String(opts.timeout));
@@ -59,7 +68,7 @@ program
   .option('--timeout <ms>', 'Per-request timeout in ms (maps to --timeoutMs)')
   .option('--dry-run', 'Preview without sending requests')
   .action((opts) => {
-    const args = ['--file', opts.csv, '--concurrency', String(opts.concurrency ?? '6')];
+    const args = ['--file', resolveCsvLike(opts.csv), '--concurrency', String(opts.concurrency ?? '6')];
     if (opts.baseUrl) args.push('--baseUrl', opts.baseUrl);
     if (opts.token) args.push('--token', opts.token);
     if (opts.timeout) args.push('--timeoutMs', String(opts.timeout));
@@ -80,7 +89,7 @@ program
   .option('--overwrite', 'Overwrite existing output files')
   .option('--dry-run', 'Preview output without writing files')
   .action((opts) => {
-    const args = ['--input', opts.csv];
+    const args = ['--input', resolveCsvLike(opts.csv)];
     if (opts.out) args.push('--out', opts.out);
     if (opts.column) args.push('--column', opts.column);
     if (opts.delimiter) args.push('--delimiter', opts.delimiter);
@@ -100,7 +109,7 @@ program
   .option('--rps <n>', 'Requests per second throttle')
   .option('--dry-run', 'Preview without sending')
   .action((opts) => {
-    const args = ['--input', opts.csv];
+    const args = ['--input', resolveCsvLike(opts.csv)];
     if (opts.apiUrl) args.push('--api-url', opts.apiUrl);
     if (opts.token) args.push('--token', opts.token);
     if (opts.rps) args.push('--rps', String(opts.rps));
