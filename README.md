@@ -26,7 +26,7 @@ npm install
 4) Prepare your CSV(s)
 - A CSV is a spreadsheet saved as "Comma-Separated Values".
 - Make sure it has the columns required by the script you want to run (examples below).
-- Create a `csv/` folder inside `ce-scripts/` and place files there with these names:
+- Add a csv to the  `ce-scripts/csv/`  and place files there with these names:
   - `deployments.csv` for deployments backfill
   - `prs.csv` for set-pull-services
   - `incidents.csv` for incidents import
