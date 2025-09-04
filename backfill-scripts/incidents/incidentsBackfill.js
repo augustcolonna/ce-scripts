@@ -24,7 +24,7 @@
  *   reference_id (required)
  *   source_name  (optional, default 'incident_io')
  *   priority, name (optional)
- *   started_at, resolved_at (optional; formats accepted: 'YYYY-MM-DD HH:MM:SS', 'YYYY-MM-DDTHH:MM:SS', '...Z', or with offset)
+ *   started_at, resolved_at (optional; formats accepted: 'YYYY-MM-DD', 'YYYY-MM-DD HH:MM:SS', 'YYYY-MM-DDTHH:MM:SS', '...Z', or with offset)
  *   source_url (optional)
  *   services (optional; JSON array string or delimited list by comma/semicolon/pipe)
  */
@@ -99,6 +99,8 @@ function toIso8601Z(val) {
   if (/t/i.test(v) && (/[zZ]$/.test(v) || /[+-]\d{2}:?\d{2}$/.test(v))) return v;
   // "YYYY-MM-DD HH:MM:SS(.sss)?" -> replace space with 'T' and append Z
   if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(v)) return v.replace(' ', 'T') + 'Z';
+  // "YYYY-MM-DD" -> pad seconds and Z
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v + 'T00:00:00Z';
   // "YYYY-MM-DDTHH:MM:SS(.sss)?" without timezone -> append Z
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$/i.test(v)) return v + 'Z';
   // "YYYY-MM-DD HH:MM" -> pad seconds and Z
