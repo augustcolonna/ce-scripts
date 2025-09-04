@@ -19,10 +19,11 @@ const path = require("path");
 const axios = require("axios");
 const csv = require("csv-parser");
 const minimist = require("minimist");
+require('dotenv').config();
 
 /** ========= CONFIG ========= */
-const DX_BASE_URL = "https://benchling.getdx.net";
-const DX_TOKEN = "Data Cloud API Token";
+const DX_BASE_URL = process.env.DX_BASE_URL || "";
+const DX_TOKEN = process.env.DX_TOKEN || "";
 /** ========================== */
 
 function parseBool(v, fb = false) {
@@ -135,7 +136,7 @@ async function withRetry(fn, { max = 5, baseDelay = 500 }) {
 
 async function main() {
   const args = minimist(process.argv.slice(2), {
-    string: ["file"],
+    string: ["file", "baseUrl", "token"],
     boolean: ["dryRun"],
     default: { file: "benchling.csv", concurrency: 6, dryRun: true, timeoutMs: 30000 },
   });
@@ -143,10 +144,15 @@ async function main() {
   const inputPath = path.resolve(process.cwd(), args.file);
   if (!fs.existsSync(inputPath)) throw new Error(`CSV not found at ${inputPath}`);
 
+  const baseUrl = String(args.baseUrl || DX_BASE_URL || "").trim();
+  const token = String(args.token || DX_TOKEN || "").trim();
+  if (!baseUrl) throw new Error("DX base URL missing. Provide --baseUrl or set DX_BASE_URL");
+  if (!token && !parseBool(args.dryRun, true)) throw new Error("DX token missing. Provide --token or set DX_TOKEN, or use --dryRun true");
+
   const http = axios.create({
-    baseURL: DX_BASE_URL,
+    baseURL: baseUrl,
     timeout: Number(args.timeoutMs) || 30000,
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${DX_TOKEN}` },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     validateStatus: (s) => s >= 200 && s < 500,
   });
 
@@ -167,10 +173,10 @@ async function main() {
 
       // Print the full API call preview before sending
       console.log("\n=== API CALL PREVIEW ===");
-      console.log("POST", DX_BASE_URL + "/api/deployments.setPullServices");
+      console.log("POST", baseUrl + "/api/deployments.setPullServices");
       console.log("Headers:", {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${DX_TOKEN}`,
+        "Authorization": `Bearer ${token}`,
       });
       console.log("Body:", JSON.stringify(payload, null, 2));
       console.log("========================\n");

@@ -1,8 +1,24 @@
 {
+  "name": "ce-scripts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DX CE helper scripts",
+  "type": "module",
+  "bin": {
+    "dx-scripts": "bin/dx.js",
+    "dx": "bin/dx.js"
+  },
+  "scripts": {
+    "postinstall": "chmod +x bin/dx.js || true"
+  },
   "dependencies": {
     "commander": "^14.0.0",
     "csv-parse": "^6.1.0",
     "csv-stringify": "^6.6.0",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "axios": "^1.7.7",
+    "csv-parser": "^3.0.0",
+    "minimist": "^1.2.8",
+    "dotenv": "^16.4.5"
   }
 }
