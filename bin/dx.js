@@ -168,6 +168,21 @@ program
     runNodeScript('backfill-scripts/pipelines/pipelinesBackfill.js', args);
   });
 
+
+
+
+// user-tags: wraps dx-users/getUserTags.js
+program
+  .command('user-tags')
+  .description('Export DX user data with tags and AI tools usage to CSV')
+  .option('--output <path>', 'Output CSV file path', './user_tags.csv')
+  .option('--database-url <url>', 'PostgreSQL connection string')
+  .option('--dry-run', 'Preview export without writing file')
+  .action((opts) => {
+    const args = ['--output', opts.output];
+    if (opts.databaseUrl) args.push('--database-url', opts.databaseUrl);
+    if (opts.dryRun) args.push('--dry-run');
+    runNodeScript('dx-users/getUserTags.js', args);
+  });
+
 program.parseAsync(process.argv);
-
-

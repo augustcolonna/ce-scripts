@@ -118,6 +118,11 @@ npx dx incidents
 # Pipelines import from a directory of CSV chunks
 npx dx pipelines --dir ./Backfill --dry-run
 npx dx pipelines --dir ./Backfill
+
+# User Tags Export (exports to CSV)
+npx dx user-tags --dry-run
+npx dx user-tags --output ./user_tags.csv
+
 ```
 
 **Note**: If you don't pass `--csv`, the CLI automatically looks for the default CSV file in the `csv/` directory. You can still override with `--csv /path/to/other.csv` if needed.
