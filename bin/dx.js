@@ -130,7 +130,8 @@ program
   .command('incidents')
   .description('Sync incidents from a CSV to DX')
   .option('--csv <path>', 'CSV file path (defaults to csv/incidents.csv)')
-  .option('--api-url <url>', 'DX incidents endpoint')
+  .option('--base-url <url>', 'DX base URL')
+  .option('--api-url <url>', 'DX incidents endpoint (overrides base-url)')
   .option('--token <token>', 'DX API token')
   .option('--rps <n>', 'Requests per second throttle')
   .option('--dry-run', 'Preview without sending')
@@ -141,7 +142,15 @@ program
       process.exit(1);
     }
     const args = ['--input', resolveCsvLike(csvPath)];
-    if (opts.apiUrl) args.push('--api-url', opts.apiUrl);
+    
+    // Handle API URL - if api-url is provided, use it; otherwise construct from base-url
+    if (opts.apiUrl) {
+      args.push('--api-url', opts.apiUrl);
+    } else if (opts.baseUrl) {
+      const baseUrl = opts.baseUrl.replace(/\/$/, ''); // Remove trailing slash
+      args.push('--api-url', `${baseUrl}/api/incidents.sync`);
+    }
+    
     if (opts.token) args.push('--token', opts.token);
     if (opts.rps) args.push('--rps', String(opts.rps));
     if (opts.dryRun) args.push('--dry-run');

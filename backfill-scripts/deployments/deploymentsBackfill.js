@@ -170,6 +170,31 @@ const opts = program.opts();
     process.exit(1);
   }
 
+  // Sort records by deployed_at in chronological order (oldest first)
+  records.sort((a, b) => {
+    const normalizeRow = (row) => {
+      const out = {};
+      for (const [k, v] of Object.entries(row)) {
+        out[(k || '').trim().toLowerCase()] = v;
+      }
+      return out;
+    };
+    
+    const rA = normalizeRow(a);
+    const rB = normalizeRow(b);
+    
+    if (!rA.deployed_at && !rB.deployed_at) return 0;
+    if (!rA.deployed_at) return 1; // Put records without deployed_at at the end
+    if (!rB.deployed_at) return -1;
+    
+    const dateA = new Date(toIso8601(rA.deployed_at));
+    const dateB = new Date(toIso8601(rB.deployed_at));
+    
+    return dateA.getTime() - dateB.getTime();
+  });
+  
+  log(`Sorted ${records.length} records by deployed_at (oldest first)`);
+
   let failures = 0;
   for (let i = 0; i < records.length; i++) {
     try {
