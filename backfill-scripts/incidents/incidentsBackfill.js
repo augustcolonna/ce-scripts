@@ -2,20 +2,20 @@
 /**
  * DX Incidents Importer (JavaScript / ESM)
  *
- * Reads an input CSV and POSTs each row to the DX incidents sync endpoint.
+ * Reads an input CSV and POSTs each row to the DX incidents upsert endpoint.
  * Normalizes timestamps to ISO-8601 (with trailing 'Z' when appropriate)
  * and parses the `services` column from JSON or delimited text.
  *
  * Usage:
- *   node incidents_import.mjs \
+ *   node incidentsBackfill.js \
  *     --input "./1 - Critical.csv" \
- *     --api-url https://yourinstance.getdx.net/api/incidents.sync \
+ *     --base-url https://yourinstance.getdx.net \
  *     --token <DX_TOKEN> \
  *     [--rps 10] [--dry-run]
  *
  * Environment variables (CLI flags override):
  *   INPUT_FILE      Path to CSV (default: ./1 - Critical.csv)
- *   API_URL         DX endpoint (default: https://yourinstance.getdx.net/api/incidents.sync)
+ *   BASE_URL         DX base URL (default: https://yourinstance.getdx.net)
  *   DX_TOKEN        Bearer token for DX API
  *   RPS             Requests per second throttle (default: 10)
  *   DRY_RUN         'true' to print requests without calling the API
@@ -59,7 +59,7 @@ const __dirname = path.dirname(__filename);
 const ARGS = parseArgs(process.argv);
 
 const INPUT_FILE = path.resolve(process.cwd(), ARGS.input || process.env.INPUT_FILE || '1 - Critical.csv');
-const API_URL = ARGS['api-url'] || process.env.API_URL || 'https://yourinstance.getdx.net/api/incidents.sync';
+const BASE_URL = ARGS['base-url'] || process.env.BASE_URL || 'https://yourinstance.getdx.net';
 const DX_TOKEN = ARGS.token || process.env.DX_TOKEN || '';
 const RPS = Number(ARGS.rps || process.env.RPS || 10);
 const DRY_RUN = toBool(ARGS['dry-run'] ?? process.env.DRY_RUN, false);
@@ -125,7 +125,7 @@ function buildPayload(row) {
   const r = normalizeHeaders(row);
   return {
     reference_id: r.reference_id,
-    source_name: r.source_name || 'incident_io',
+    source_name: r.source_name || 'dx_incident_backfill',
     priority: r.priority,
     name: r.name,
     started_at: toIso8601Z(r.started_at),
@@ -159,7 +159,7 @@ function buildPayload(row) {
       if (DRY_RUN) {
         log('[DRY_RUN] Skipping POST');
       } else {
-        const resp = await _fetch(API_URL, {
+        const resp = await _fetch(`${BASE_URL}/api/incidents.upsert`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DX_TOKEN}` },
           body: JSON.stringify(payload),
