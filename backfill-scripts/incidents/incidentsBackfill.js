@@ -2,7 +2,7 @@
 /**
  * DX Incidents Importer (JavaScript / ESM)
  *
- * Reads an input CSV and POSTs each row to the DX incidents upsert endpoint.
+ * Reads an input CSV and POSTs each row to the DX incidents sync endpoint.
  * Normalizes timestamps to ISO-8601 (with trailing 'Z' when appropriate)
  * and parses the `services` column from JSON or delimited text.
  *
@@ -159,7 +159,7 @@ function buildPayload(row) {
       if (DRY_RUN) {
         log('[DRY_RUN] Skipping POST');
       } else {
-        const resp = await _fetch(`${BASE_URL}/api/incidents.upsert`, {
+        const resp = await _fetch(`${BASE_URL}/api/incidents.sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DX_TOKEN}` },
           body: JSON.stringify(payload),
